@@ -38,3 +38,24 @@ def inventory_logic():
     finally:
         if connection:
             connection.close()
+
+
+def stock_stats():
+    connection = get_connect()
+    if not connection:
+        return {"error": "Не удалось подключится к БД"}
+
+    try:
+        with connection.cursor() as cursor:
+            # left join
+            sql = "SELECT categories.name, COALESCE(SUM(products.quantity),0) AS big_quantity FROM categories LEFT JOIN products ON categories.id = products.category_id GROUP BY categories.name ORDER BY big_quantity DESC"
+            cursor.execute(sql)
+
+            row = cursor.fetchall() # post sql data
+            return {"message":f"Список категорий успешно отправлен {row}!"}
+
+    except Exception as e: # if return exception
+        return {"error": f"Ошибка при отправлении списка категорий {e}"}
+    finally:
+        if connection:
+            connection.close()
