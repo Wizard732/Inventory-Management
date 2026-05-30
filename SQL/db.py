@@ -58,3 +58,22 @@ def categories(item: Data):
             connection.close()
 
 
+def list_product():
+    # return list full product
+    connection = connect()
+    if not connection:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT products.name FROM products LEFT JOIN categories ON products.category_id = categories.id"
+            cursor.execute(sql)
+
+            row = cursor.fetchall()
+        return {"message": f"Список всех товаров - {row}!"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
+    finally:
+        if connection:
+            connection.close()
