@@ -124,3 +124,27 @@ def add_products(item: Data):
     finally:
         if connection:
             connection.close()
+
+
+def patch_in_products(id: int, quantity: int):
+    # patch product
+    connection = connect()
+    if not connection:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "UPDATE products SET quantity = %s WHERE id = %s" # update quantity on (int quantity) if id = id
+            cursor.execute(sql,(quantity,id))
+
+            connection.commit()
+
+            if cursor.rowcount == 0:
+                return {"error": "Товар не найден или количество уже совпадает."}
+        return {"message": f"Количество успешно изменено на {quantity}!"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
+    finally:
+        if connection:
+            connection.close()
