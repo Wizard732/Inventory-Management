@@ -89,7 +89,7 @@ def filter_products(id:int):
 
     try:
         with connection.cursor() as cursor:
-            sql = "SELECT * FROM products WHERE id = %s"
+            sql = "SELECT * FROM products WHERE id = %s" # maybe i'll add sort return
             cursor.execute(sql,(id,))
 
             row = cursor.fetchall()
@@ -105,3 +105,22 @@ def filter_products(id:int):
             connection.close()
 
 
+def add_products(item: Data):
+    # add data in products
+    connection = connect()
+    if not connection:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "INSERT INTO products (id,name,category_id, quantity, price) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(sql,(item.id,item.name,item.category_id,item.quantity,item.price))
+            connection.commit()
+
+        return {"message": "Данные успешно добавлены!"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
+    finally:
+        if connection:
+            connection.close()
