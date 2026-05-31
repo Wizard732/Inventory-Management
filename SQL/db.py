@@ -1,3 +1,5 @@
+from pydantic.deprecated.json import custom_pydantic_encoder
+
 from SQL.config import HOST, USER, PASSWORD, DATABASE
 from fastapi import HTTPException
 import pymysql
@@ -77,3 +79,29 @@ def list_product():
     finally:
         if connection:
             connection.close()
+
+
+def filter_products(id:int):
+    # sort product by id
+    connection = connect()
+    if not connection:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM products WHERE id = %s"
+            cursor.execute(sql,(id,))
+
+            row = cursor.fetchall()
+
+            if not row:
+                return {"error": "ID отсутствует в базе данных"}
+        return {"message": f"Сортировка завершена успешно {row}!"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
+    finally:
+        if connection:
+            connection.close()
+
+

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from FastAPI.models import Data
-from SQL.db import full_categories, categories,list_product
+from SQL.db import full_categories, categories,list_product, filter_products
 app = FastAPI()
 
 @app.get("/categories")
@@ -14,3 +14,7 @@ def post_category(item: Data):
 @app.get("/list_product")
 def list_products():
     return list_product()
+
+@app.get("/filter_product")
+def filter(id: int):
+    return filter_products(id)
