@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from FastAPI.models import Data
-from SQL.db import full_categories, categories,list_product, filter_products, add_products, patch_in_products
+from SQL.db import full_categories, categories,list_product, filter_products, add_products, patch_in_products, delete_by_id
 app = FastAPI()
 
 @app.get("/categories")
@@ -26,3 +26,7 @@ def add(item: Data):
 @app.patch("/patch_id")
 def patch(id:int, quantity:int):
     return patch_in_products(id,quantity)
+
+@app.delete("/delete")
+def delete_id(id: int):
+    return delete_by_id(id)

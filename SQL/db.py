@@ -148,3 +148,25 @@ def patch_in_products(id: int, quantity: int):
     finally:
         if connection:
             connection.close()
+
+
+def delete_by_id(id:int):
+    # delete data by id
+    connection = connect()
+    if not connection:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
+
+    try:
+        with connection.cursor() as cursor:
+            sql = "DELETE FROM products WHERE id = %s"
+            cursor.execute(sql,(id,))
+
+            connection.commit()
+
+        return {"message": "Данные успешно удалены!"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
+    finally:
+        if connection:
+            connection.close()
