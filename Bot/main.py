@@ -4,6 +4,7 @@ from aiogram.filters import Command
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from FastAPI.models import Data # импортируем проверку пайдантик
+
 from SQL.db import (
     full_categories,
     categories,
@@ -14,9 +15,11 @@ from SQL.db import (
     delete_by_id
 )
 
+import os
+from dotenv import load_dotenv
+load_dotenv(".env")
 
-
-API_TOKEN = "8812490005:AAGU1xoioXQaucL_Kx2VOS4HuBYSAKY-WMw" # create secret key
+API_TOKEN = os.getenv("token_name") # create secret key
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
