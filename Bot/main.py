@@ -1,8 +1,7 @@
 import asyncio
-from email import message
-
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters import Command, callback_data
+from aiogram.types import InlineKeyboardButton
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from FastAPI.models import Data # импортируем проверку пайдантик
@@ -30,7 +29,33 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def start(message: types.Message):
+    button1 = InlineKeyboardButton(text="Список команд.",callback_data="command") # надпись сверху над кнопкой
+    keyboard1 = types.InlineKeyboardMarkup(inline_keyboard=[[button1]])
     msg = await message.answer(f"Привет, {message.from_user.full_name}! Этот бот создан для системы инвентаря. Хотите ли вы воспользоваться функциями бота? ")
+
+    await message.answer(
+        'Разделы',
+        reply_markup=keyboard1
+    )
+
+@dp.callback_query(F.data == "command")
+async def help_command(callback: types.CallbackQuery):
+    keyboard = types.InlineKeyboardMarkup(
+        inline_keyboard=[
+            [types.InlineKeyboardButton(text="categories", callback_data="ignore")],
+            [types.InlineKeyboardButton(text="add-categories", callback_data="ignore")],
+            [types.InlineKeyboardButton(text="products", callback_data="ignore")],
+            [types.InlineKeyboardButton(text="add_prod", callback_data="ignore")],
+            [types.InlineKeyboardButton(text="buy", callback_data="ignore")]
+        ]
+    )
+
+    await callback.answer()
+
+    await callback.message.answer(
+        "📋 Доступные разделы (просто список не клибательный):",
+        reply_markup=keyboard
+    )
 
 @dp.message(Command("categories"))
 # return categories
