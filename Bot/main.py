@@ -4,6 +4,7 @@ from aiogram.filters import Command
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from FastAPI.models import Data # импортируем проверку пайдантик
+import random
 
 from SQL.db import (
     full_categories,
@@ -88,6 +89,49 @@ async def products(message: types.Message):
     await asyncio.sleep(3)
     msg = await message.answer(f"Данные категории успешно получены {data}!")
 
+
+@dp.message(Command("add_prod"))
+# add product in table products
+async def add_prod(message:types.Message):
+    args = message.text.split()
+
+    if len(args) < 5:
+        await message.answer("Ошибка! Формат для создания товара (название -> цена -> количество -> выбор категории).")
+        return
+
+    price = args[-3]
+    quantity = args[-2]
+    category = args[-1]
+
+    category_name = " ".join(args[1:-3]).strip() # full words with 4 index
+
+    try:
+        new_price = float(price) # validation
+        new_quantity = int(quantity)
+        new_category = int(category)
+    except ValueError:
+        await message.answer("Ошибка: Цена должна быть дробным числом, а Количество и ID категории — целыми числами!")
+        return
+
+    try:
+        new_item = Data(
+            id=(random.randint(1,999)),
+            name=category_name,
+            category_id=new_category,
+            quantity=new_quantity,
+            price=new_price
+        )
+
+        data = add_products(item=new_item) # call function for add products
+
+        await asyncio.sleep(3)
+        await message.answer(f"Данные успешно добавлены в таблицу! Результат - {data}.")
+
+    except Exception as e:
+        await message.answer(f"Ошибка при добавлении товара в БД. {e}")
+
+
+
 @asynccontextmanager
 async def fastapi_endpoint(app: FastAPI):
     # Запускаем ваш dp.start_polling, но через create_task (в фоне!)
@@ -115,3 +159,6 @@ def post_category(item: Data):
 def list_products():
     return list_product()
 
+@app.post("/add_product")
+def add(item: Data):
+    return add_products(item)
