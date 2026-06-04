@@ -1,4 +1,6 @@
 import asyncio
+from email import message
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from fastapi import FastAPI
@@ -130,6 +132,39 @@ async def add_prod(message:types.Message):
     except Exception as e:
         await message.answer(f"Ошибка при добавлении товара в БД. {e}")
 
+
+@dp.message(Command("buy"))
+# buy product
+async def buy(message: types.Message):
+    msg = message.text.split()
+
+    if len(msg) < 3: # if error
+        await message.answer("Не верный запрос. Пример - /buy {id} - 1 {quantity} - 3")
+        return
+
+
+    id = msg[1]
+    quantity = msg[2]
+
+    try:
+        # validation
+        new_id = int(id)
+        new_quantity = int(quantity)
+    except ValueError:
+        await message.answer("Ошибка валидации данных.")
+
+    if new_quantity <= 0:
+        await message.answer("❌ Количество для покупки должно быть больше нуля!")
+        return
+
+    try:
+        data = patch_in_products(id=new_id, quantity=new_quantity)
+        await asyncio.sleep(3)
+
+        await message.answer(f"Покупка оформлена успешно. {data}")
+
+    except Exception as e:
+        await message.answer(f"Ошибка при оформлении покупки. {e}")
 
 
 @asynccontextmanager
