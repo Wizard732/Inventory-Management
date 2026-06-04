@@ -79,6 +79,15 @@ async def add_cat(message: types.Message):
         # Если в базе данных уже есть такой ID, то вылетит ошибка, и мы поймаем её здесь
         await message.answer(f"❌ Ошибка базы данных (возможно, такой ID уже занят): {e}")
 
+
+@dp.message(Command("products"))
+# return list products
+async def products(message: types.Message):
+    data = list_product()
+
+    await asyncio.sleep(3)
+    msg = await message.answer(f"Данные категории успешно получены {data}!")
+
 @asynccontextmanager
 async def fastapi_endpoint(app: FastAPI):
     # Запускаем ваш dp.start_polling, но через create_task (в фоне!)
@@ -101,3 +110,8 @@ def get_categories():
 @app.post("/post_categories")
 def post_category(item: Data):
     return categories(item)
+
+@app.get("/list_product")
+def list_products():
+    return list_product()
+
