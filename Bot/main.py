@@ -192,6 +192,32 @@ async def buy(message: types.Message):
         await message.answer(f"Ошибка при оформлении покупки. {e}")
 
 
+@dp.message(Command("delete"))
+# delete item by id
+async def delete(message:types.Message):
+    msg = message.text.split() # add space in words
+
+    if len(msg) < 2:
+        await message.answer("Ошибка! Не верный ввод данных. Пример - /delete {id для удаления}")
+        return
+
+    id = msg[1] # use 2 element in len
+
+    try:
+        new_id= int(id) # created validation id
+    except ValueError:
+        await message.answer("Ошибка валидации. Id должен быть целым числом!")
+
+    try:
+        data = delete_by_id(new_id) # call function with fastapi
+        await asyncio.sleep(2)
+
+        await message.answer(f"Данные с id - {id} удалены успешно! {data}")
+
+    except Exception as e:
+        await message.answer(f"Ошибка при удалении товара - {e}")
+
+
 @asynccontextmanager
 async def fastapi_endpoint(app: FastAPI):
     # Запускаем ваш dp.start_polling, но через create_task (в фоне!)
@@ -222,3 +248,7 @@ def list_products():
 @app.post("/add_product")
 def add(item: Data):
     return add_products(item)
+
+@app.delete("/delete")
+def delete_id(id: int):
+    return delete_by_id(id)
