@@ -25,7 +25,7 @@ class Categories(Base):
     # connect categories
     __tablename__ = "categories"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(30))
 
 # create engine
@@ -50,46 +50,22 @@ def return_categories():
     return result
 
 
-
-
-def full_categories():
-    connection = connect() # connect to sql
-    if not connection:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
-
+def add_categories(item: Data):
+    # add data in categories
     try:
-        with connection.cursor() as cursor:
-            sql = "SELECT name FROM categories" # return all name in categories
-            cursor.execute(sql)
-
-            row = cursor.fetchall()
-        return {"message": f"Список всех категорий - {row}!"}
-
-    except Exception as e: # if exception
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
-    finally:
-        if connection:
-            connection.close()
-
-
-def categories(item: Data):
-    connection = connect()
-    if not connection:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
-
-    try:
-        with connection.cursor() as cursor:
-            sql = "INSERT INTO categories (id,name) VALUES (%s, %s)"  # push data in sql
-            cursor.execute(sql,(item.id, item.name))
-            connection.commit()
-
-        return {"message": "Новая категория успешно создана!"}
+        new_data = Categories(
+        # add data with pydantic for sqlalchemy
+            id = item.id,
+            name = item.name
+        )
+        session.add(new_data)
+        session.commit() # save data
+        return(f"Данные успешно записаны в таблицу! {new_data.id}, {new_data.name}")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
-    finally:
-        if connection:
-            connection.close()
+        session.rollback() # if happened error
+        raise HTTPException(status_code=500, detail=f"Ошибка при добавлении данных {e}.")
+
 
 
 def list_product():

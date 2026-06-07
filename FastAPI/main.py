@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from FastAPI.models import Data
-from SQL.db import full_categories, categories, list_product, filter_products, add_products, patch_in_products, \
-    delete_by_id, return_categories
+from SQL.db import list_product, filter_products, add_products, patch_in_products, \
+    delete_by_id, return_categories, add_categories
 app = FastAPI()
 
 @app.get("/categories")
@@ -10,7 +10,7 @@ def get_categories():
 
 @app.post("/post_categories")
 def post_category(item: Data):
-    return categories(item)
+    return add_categories(item)
 
 @app.get("/list_product")
 def list_products():
