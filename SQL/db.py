@@ -1,9 +1,10 @@
+
 from SQL.config import HOST, USER, PASSWORD, DATABASE
 from fastapi import HTTPException
 import pymysql
 from FastAPI.models import Data
 
-from sqlalchemy import create_engine, Column, Integer, Float, String
+from sqlalchemy import create_engine, Column, Integer, Float, String, select, DECIMAL
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 def connect():
@@ -27,6 +28,18 @@ class Categories(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(30))
+
+
+class Products(Base):
+    __tablename__ = "products"
+
+    id = Column(Integer,primary_key=True,autoincrement=True)
+    name = Column(String(30))
+    category_id = Column(Integer)
+    quantity = Column(Integer, default=0)
+    price = Column(DECIMAL(10,2))
+
+
 
 # create engine
 engine = create_engine(
@@ -65,6 +78,22 @@ def add_categories(item: Data):
     except Exception as e:
         session.rollback() # if happened error
         raise HTTPException(status_code=500, detail=f"Ошибка при добавлении данных {e}.")
+
+
+def list_products():
+    # use a left join to connect table
+    left_join = session.query(Products, Categories).outerjoin(Categories, Products.category_id == Categories.id)
+
+    result = left_join.all() # result left join
+
+    if not result:
+        return("Таблицы пустые.")
+
+    results = []
+    for product, category in result : # product and category get item
+        item_name = category.name if category else "Без категории" # if category exists use category.name if not on that category = Без категории
+        results.append(f"{product.name} (Категория: {item_name})") # add data in results
+    return(f"Список всех записей - {results}")
 
 
 
