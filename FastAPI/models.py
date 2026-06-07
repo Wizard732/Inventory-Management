@@ -6,3 +6,4 @@ class Data(BaseModel):
     category_id: int
     quantity: int = Field(default=0)
     price: float = Field(le=50000)
+    

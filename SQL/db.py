@@ -1,11 +1,10 @@
-from pydantic.deprecated.json import custom_pydantic_encoder
-
 from SQL.config import HOST, USER, PASSWORD, DATABASE
 from fastapi import HTTPException
 import pymysql
 from FastAPI.models import Data
 
-
+from sqlalchemy import create_engine, Column, Integer, Float, String
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 def connect():
     try:
@@ -18,6 +17,39 @@ def connect():
         return connection
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
+
+
+Base = declarative_base() # base for all table
+
+class Categories(Base):
+    # connect categories
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(30))
+
+# create engine
+engine = create_engine(
+    "mysql+pymysql://wizard:5732@localhost:3306/learn_sql"
+)
+
+Session = sessionmaker(bind=engine)
+session = Session()
+Base.metadata.create_all(engine)
+
+
+def return_categories():
+    all_category = session.query(Categories).all()
+
+    if len(all_category) == 0:
+        return("Категория пустая.")
+
+    result = []
+    for category in all_category:
+        result.append(f"Категория {category.name} успешно найдена!")
+    return result
+
+
 
 
 def full_categories():
@@ -170,3 +202,4 @@ def delete_by_id(id:int):
     finally:
         if connection:
             connection.close()
+
