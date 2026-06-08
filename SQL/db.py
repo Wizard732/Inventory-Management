@@ -115,25 +115,27 @@ def filter_products_by_id(id: int):
 
 
 
-def add_products(item: Data):
-    # add data in products
-    connection = connect()
-    if not connection:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
-
+def add_products(item:Data):
+    # create variable with data
     try:
-        with connection.cursor() as cursor:
-            sql = "INSERT INTO products (id,name,category_id, quantity, price) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(sql,(item.id,item.name,item.category_id,item.quantity,item.price))
-            connection.commit()
+        new_data = Products(
+            id = item.id,
+            name = item.name,
+            category_id = item.category_id, # validation data
+            quantity = item.quantity,
+            price = item.price,
+        )
 
-        return {"message": "Данные успешно добавлены!"}
+        session.add(new_data)
+        session.commit() # save updated
+
+        return(f"Данные успешно добавлены в таблицу! Id - {new_data.id}, name - {new_data.name},"
+               f" category_id - {new_data.category_id}, quantity = {new_data.quantity}, price - {new_data.price}")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
-    finally:
-        if connection:
-            connection.close()
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Не удалось добавить данные {e}.")
+
 
 
 def patch_in_products(id: int, quantity: int):
