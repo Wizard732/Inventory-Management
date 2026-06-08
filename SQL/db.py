@@ -97,49 +97,22 @@ def list_products():
 
 
 
-def list_product():
-    # return list full product
-    connection = connect()
-    if not connection:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
-
+def filter_products_by_id(id: int):
+    # if id == id return data
     try:
-        with connection.cursor() as cursor:
-            sql = "SELECT products.name FROM products LEFT JOIN categories ON products.category_id = categories.id"
-            cursor.execute(sql)
+        result = select(Products).where(Products.id == id) # where query
+        returns = session.execute(result).scalar_one_or_none() # Если строка есть, очисти её от лишних кортежей и дай мне сразу чистый объект продукта. Если строки нет, верни None
 
-            row = cursor.fetchall()
-        return {"message": f"Список всех товаров - {row}!"}
+        if not returns:
+            return("Такого id нет в базе")
+
+        format_string = f"id - {returns.id} name - {returns.name}" # format the string for return
+        return(f"Данные успешно отфильтрованы - {format_string}!")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
-    finally:
-        if connection:
-            connection.close()
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Ошибка при выполнении запроса: {e}.")
 
-
-def filter_products(id:int):
-    # sort product by id
-    connection = connect()
-    if not connection:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
-
-    try:
-        with connection.cursor() as cursor:
-            sql = "SELECT * FROM products WHERE id = %s" # maybe i'll add sort return
-            cursor.execute(sql,(id,))
-
-            row = cursor.fetchall()
-
-            if not row:
-                return {"error": "ID отсутствует в базе данных"}
-        return {"message": f"Сортировка завершена успешно {row}!"}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
-    finally:
-        if connection:
-            connection.close()
 
 
 def add_products(item: Data):
