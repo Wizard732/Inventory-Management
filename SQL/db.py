@@ -138,6 +138,23 @@ def add_products(item:Data):
 
 
 
+def patch_products(id: int, quantity: int):
+    # search item with id
+    try:
+        item = session.get(Products, id) # search product by id
+
+        if item:
+            item.quantity = quantity # update this product
+
+        session.commit() # save updated
+
+        return(f"Количество предмета с id - {id} успешно изменено на {quantity}")
+
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Не удалось обновить данные {e}.")
+
+
 def patch_in_products(id: int, quantity: int):
     # patch product
     connection = connect()
