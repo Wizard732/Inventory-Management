@@ -155,48 +155,20 @@ def patch_products(id: int, quantity: int):
         raise HTTPException(status_code=500, detail=f"Не удалось обновить данные {e}.")
 
 
-def patch_in_products(id: int, quantity: int):
-    # patch product
-    connection = connect()
-    if not connection:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
 
+def delete_by_id(id: int):
+    # search product with id
     try:
-        with connection.cursor() as cursor:
-            sql = "UPDATE products SET quantity = %s WHERE id = %s" # update quantity on (int quantity) if id = id
-            cursor.execute(sql,(quantity,id))
+        data = session.get(Products, id) # take data
 
-            connection.commit()
+        if data:
+            session.delete(data) # delete data
 
-            if cursor.rowcount == 0:
-                return {"error": "Товар не найден или количество уже совпадает."}
-        return {"message": f"Количество успешно изменено на {quantity}!"}
+        session.commit()
+
+        return("Данные успешно удалены!")
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
-    finally:
-        if connection:
-            connection.close()
-
-
-def delete_by_id(id:int):
-    # delete data by id
-    connection = connect()
-    if not connection:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД")
-
-    try:
-        with connection.cursor() as cursor:
-            sql = "DELETE FROM products WHERE id = %s"
-            cursor.execute(sql,(id,))
-
-            connection.commit()
-
-        return {"message": "Данные успешно удалены!"}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Не удалось подключиться к БД {e}")
-    finally:
-        if connection:
-            connection.close()
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Ошибка при удалении данных {e}.")
 

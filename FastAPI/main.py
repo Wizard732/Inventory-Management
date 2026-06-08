@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends
 from FastAPI.models import Data
-from SQL.db import list_products, add_products, patch_in_products, \
+from SQL.db import list_products, add_products,\
     delete_by_id, return_categories, add_categories, filter_products_by_id, patch_products
+
 app = FastAPI()
 
 @app.get("/categories")
